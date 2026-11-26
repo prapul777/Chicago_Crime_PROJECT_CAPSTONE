@@ -1,0 +1,238 @@
+/* Classic layout matching the dashboard */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f5f7;
+    color: #263344;
+}
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    background: #263344;
+    color: white;
+    padding: 25px 18px;
+    flex-shrink: 0;
+}
+
+.sidebar h2 {
+    font-size: 19px;
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    display: block;
+    padding: 12px;
+    margin-bottom: 8px;
+    color: #e2e8f0;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.sidebar a:hover, .sidebar .active {
+    background: #3c495a;
+}
+
+main {
+    flex: 1;
+    min-width: 0;
+    padding: 30px;
+}
+
+h1 { font-size: 28px; margin-top: 0; }
+h2 { font-size: 19px; }
+
+.card {
+    background: white;
+    border: 1px solid #dce1e7;
+    border-radius: 8px;
+    padding: 22px;
+    margin-bottom: 22px;
+}
+
+.card h2 { margin-top: 0; }
+
+.description {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+/* District form layout */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 7px;
+    color: #475569;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #263344;
+}
+
+input[readonly] {
+    background: #f0f1f3;
+    color: #64748b;
+}
+
+input:focus {
+    outline: 1px solid #64748b;
+}
+
+/* HTTP operation buttons */
+button, .btn {
+    display: inline-block;
+    background: #334155;
+    color: white;
+    padding: 9px 13px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.secondary {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.patch {
+    background: #e0ece9;
+    color: #356859;
+}
+
+.delete {
+    background: #f1e5e5;
+    color: #914545;
+}
+
+button:hover, .btn:hover {
+    opacity: 0.85;
+}
+
+.actions {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.form-actions { margin-top: 20px; }
+
+/* GET form and district search */
+.district-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.district-search input {
+    flex: 1;
+    min-width: 180px;
+}
+
+.district-search button,
+.district-search .btn {
+    padding: 10px 18px;
+}
+
+.get-form {
+    max-width: 550px;
+    margin-bottom: 0;
+}
+
+.search-result {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+/* Existing district records */
+.table-wrap { overflow-x: auto; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th { background: #f1f3f5; }
+
+tr:hover, .selected {
+    background: #f5f7fa;
+}
+
+td a {
+    color: #334155;
+    font-weight: bold;
+}
+
+/* Preserve operation button text colours */
+td .btn { color: white; }
+td .secondary { color: #334155; }
+td .patch { color: #356859; }
+td .delete { color: #914545; }
+
+/* Flask feedback messages */
+.message {
+    padding: 12px;
+    margin-bottom: 18px;
+    border-radius: 5px;
+    background: #e8edf2;
+}
+
+.success { color: #386641; }
+.error { color: #914545; }
+
+footer {
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+    .layout { display: block; }
+    .sidebar { width: 100%; }
+    main { padding: 18px; }
+
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 550px) {
+    .grid { grid-template-columns: 1fr; }
+
+    .district-search input {
+        flex-basis: 100%;
+        min-width: 0;
+    }
+}

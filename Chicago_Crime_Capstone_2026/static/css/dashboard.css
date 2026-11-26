@@ -1,0 +1,124 @@
+/* Classic dashboard layout */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f5f7;
+    color: #263344;
+}
+
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+    width: 240px;
+    background: #263344;
+    color: white;
+    padding: 25px 18px;
+    flex-shrink: 0;
+}
+
+.sidebar h2 { font-size: 19px; margin-bottom: 30px; }
+
+.sidebar a {
+    display: block;
+    padding: 12px;
+    margin-bottom: 8px;
+    color: #e2e8f0;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.sidebar a:hover, .sidebar .active {
+    background: #3c495a;
+}
+
+main { flex: 1; min-width: 0; padding: 30px; }
+
+h1 { font-size: 28px; margin: 0 0 10px; }
+h2 { font-size: 20px; margin: 28px 0 16px; }
+h3 { font-size: 16px; margin: 0 0 15px; }
+
+.subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+/* KPI cards and chart layout */
+.card {
+    background: white;
+    border: 1px solid #dce1e7;
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 0;
+}
+
+.kpi-grid, .grid {
+    display: grid;
+    gap: 18px;
+}
+
+.kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kpi-label { color: #64748b; font-size: 13px; }
+
+.kpi-value {
+    font-size: 27px;
+    font-weight: bold;
+    margin: 12px 0;
+    overflow-wrap: anywhere;
+}
+
+.kpi-note {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.chart-image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.chart-insight {
+    background: #f4f5f7;
+    border-left: 3px solid #94a3b8;
+    padding: 12px;
+    margin-top: 15px;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.chart-insight p { margin: 6px 0 0; }
+
+footer {
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 30px;
+    padding: 15px;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 1200px) {
+    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+    .layout { display: block; }
+    .sidebar { width: 100%; }
+    main { padding: 18px; }
+    .grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 550px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+}

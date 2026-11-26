@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicago Crime Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+
+<body>
+<div class="layout">
+
+    <!-- Sidebar navigation -->
+    <aside class="sidebar">
+        <h2>Chicago Crime Analytics</h2>
+
+        <a href="{{ url_for('dashboard') }}" class="active">
+            Dashboard Overview
+        </a>
+
+        <a href="{{ url_for('districts.list_districts') }}">
+            Police District Management
+        </a>
+    </aside>
+
+    <main>
+        <h1>Crime Intelligence Dashboard</h1>
+        <p class="subtitle">
+            Chicago Crime Data Analysis, Reporting &amp; Insights
+        </p>
+
+        <!-- Display crime statistics retrieved from SQLite -->
+        <section class="kpi-grid">
+
+            <article class="card">
+                <div class="kpi-label">Total Crime Records</div>
+                <div class="kpi-value">
+                    {{ "{:,}".format(data.total_crimes) }}
+                </div>
+                <div class="kpi-note">Records available for analysis</div>
+            </article>
+
+            <article class="card">
+                <div class="kpi-label">Overall Arrest Rate</div>
+                <div class="kpi-value">
+                    {{ "%.2f"|format(data.arrest_rate) }}%
+                </div>
+                <div class="kpi-note">
+                    {{ data.total_arrests }} arrests recorded
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="kpi-label">Crime Categories</div>
+                <div class="kpi-value">{{ data.category_count }}</div>
+                <div class="kpi-note">Distinct primary crime types</div>
+            </article>
+
+            <article class="card">
+                <div class="kpi-label">Most Common Crime</div>
+                <div class="kpi-value">
+                    {{ data.top_crime.primary_type if data.top_crime else 'N/A' }}
+                </div>
+                <div class="kpi-note">
+                    {% if data.top_crime %}
+                        {{ data.top_crime.crime_count }} cases
+                        ({{ "%.2f"|format(data.top_crime.percentage) }}%)
+                    {% else %}
+                        No crime records available
+                    {% endif %}
+                </div>
+            </article>
+
+        </section>
+
+        <!-- Map each notebook-generated chart to its analytical insight -->
+        {% set chart_insights = {
+            'crime_trend_over_years.png':
+                '2016 contains 490 recorded incidents, the highest count in the supplied dataset. This sample does not represent complete citywide crime trends.',
+
+            'top_10_crime_categories.png':
+                'THEFT is the most frequently recorded crime category, accounting for 105 incidents and 21.08% of the dataset.',
+
+            'crime_month_weekday_heatmap.png':
+                'The heatmap compares recorded crime frequencies across months and weekdays to identify temporal patterns.',
+
+            'top10_communities.png':
+                'Austin records the highest crime count among the community areas in the supplied dataset, with 34 incidents.',
+
+            'crime_hourly_distribution.png':
+                'The midnight concentration occurs because the source contains dates without actual occurrence times. Reliable hourly crime patterns cannot be determined.',
+
+            'community_crime_boxplot.png':
+                'The boxplot summarizes community-level crime counts and highlights unusually high observations using the interquartile range.',
+
+            'crime_correlation_heatmap.png':
+                'The correlation heatmap measures linear relationships between numerical variables. These relationships do not establish causation.',
+
+            'sql_yearly_crime_report.png':
+                'The SQL report confirms that 490 of the 498 recorded incidents belong to 2016.',
+
+            'sql_crime_category_report.png':
+                'The SQL category report identifies THEFT as the leading crime category, with 105 recorded incidents.'
+        } %}
+
+        <!-- Reuse one card structure for all nine charts -->
+        <h2>Crime Analysis Visualizations</h2>
+
+        <section class="grid">
+            {% for chart in charts %}
+
+                <article class="card">
+                    <h3>{{ chart.title }}</h3>
+
+                    <img class="chart-image"
+                         src="{{ url_for('static', filename='charts/' ~ chart.file) }}"
+                         alt="{{ chart.title }}"
+                         loading="lazy">
+
+                    <div class="chart-insight">
+                        <strong>Key Insight</strong>
+                        <p>{{ chart_insights[chart.file] }}</p>
+                    </div>
+                </article>
+
+            {% endfor %}
+        </section>
+
+        <footer>
+            Chicago Crime Analytics | Capstone Project 2026
+        </footer>
+
+    </main>
+</div>
+</body>
+</html>

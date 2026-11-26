@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police District Management</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/districts.css') }}">
+</head>
+
+<body>
+<div class="layout">
+
+    <!-- Sidebar navigation -->
+    <aside class="sidebar">
+
+        <h2>Chicago Crime Analytics</h2>
+
+        <a href="{{ url_for('dashboard') }}">
+            Dashboard Overview
+        </a>
+
+        <a href="{{ url_for('districts.list_districts') }}"
+           class="active">
+            Police District Management
+        </a>
+
+    </aside>
+
+    <main>
+
+        <h1>Police District Management</h1>
+
+        <!-- Display operation success or error messages -->
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+
+            <div class="message {{ category }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+
+        <!-- ==================================================
+             GET: RETRIEVE A RECORD BY ITS UNIQUE IDENTIFIER
+             ================================================== -->
+
+        <section class="card">
+
+            <h2>GET - Retrieve Police District</h2>
+
+            <p class="description">
+                Retrieve complete details of a specific district
+                using its unique identifier.
+            </p>
+
+            <label for="get_district_code">
+                District Code
+            </label>
+
+            <form class="district-search get-form"
+                  method="GET"
+                  action="{{ url_for('districts.retrieve_district') }}">
+
+                <input
+                    id="get_district_code"
+                    type="number"
+                    name="district_code"
+                    placeholder="Enter district code"
+                    value="{{ selected.district_code
+                              if mode == 'view' and selected
+                              else '' }}"
+                    min="1"
+                    step="1"
+                    required
+                >
+
+                <button type="submit">
+                    GET
+                </button>
+
+                <a class="btn secondary"
+                   href="{{ url_for('districts.list_districts') }}">
+                    Clear
+                </a>
+
+            </form>
+
+        </section>
+
+
+        <!-- ==================================================
+             POST, PUT AND PATCH: REUSABLE DISTRICT FORM
+             ================================================== -->
+
+        {% if mode in ['create', 'edit', 'patch'] %}
+
+            {% set editing = mode in ['edit', 'patch'] %}
+
+            {% if mode == 'edit' %}
+
+                {% set operation = 'PUT' %}
+
+                {% set form_action = url_for(
+                    'districts.save_district_edit',
+                    district_code=selected.district_code
+                ) %}
+
+            {% elif mode == 'patch' %}
+
+                {% set operation = 'PATCH' %}
+
+                {% set form_action = url_for(
+                    'districts.save_district_patch',
+                    district_code=selected.district_code
+                ) %}
+
+            {% else %}
+
+                {% set operation = 'POST' %}
+
+                {% set form_action = url_for(
+                    'districts.create_district'
+                ) %}
+
+            {% endif %}
+
+            <section class="card">
+
+                {% if mode == 'edit' %}
+
+                    <h2>
+                        PUT - Full Update of District
+                        {{ selected.district_code }}
+                    </h2>
+
+                    <p class="description">
+                        Update all editable fields of an existing
+                        district using its unique identifier.
+                        The district code and other original
+                        details remain unchanged.
+                    </p>
+
+                {% elif mode == 'patch' %}
+
+                    <h2>
+                        PATCH - Partial Update of District
+                        {{ selected.district_code }}
+                    </h2>
+
+                    <p class="description">
+                        Update only selected fields of an existing
+                        district without modifying the remaining fields.
+                        Only changed values will be saved.
+                    </p>
+
+                {% else %}
+
+                    <h2>POST - Add New Police District</h2>
+
+                    <p class="description">
+                        Create a new police district record
+                        using a unique district code.
+                    </p>
+
+                {% endif %}
+
+                <!-- Native HTML forms submit POST requests.
+                     Flask applies the corresponding operation. -->
+
+                <form method="POST" action="{{ form_action }}">
+
+                    <div class="grid">
+
+                        <!-- Show seven fields for creation
+                             and all 15 fields for updates. -->
+
+                        {% for field, label in district_fields.items() %}
+
+                            {% if editing or field == 'district_code'
+                                  or field in editable_fields %}
+
+                                {% set locked = editing and
+                                   field not in editable_fields %}
+
+                                <div>
+
+                                    <label for="{{ field }}">
+                                        {{ label }}
+                                    </label>
+
+                                    <input
+                                        id="{{ field }}"
+                                        type="{{ 'number'
+                                                if field == 'district_code'
+                                                else 'text' }}"
+
+                                        value="{{ selected.get(field, '')
+                                                  if editing and
+                                                  selected.get(field) is not none
+                                                  else '' }}"
+
+                                        {% if locked %}
+                                            readonly
+                                        {% else %}
+                                            name="{{ field }}"
+                                        {% endif %}
+
+                                        {% if field == 'district_code' %}
+                                            min="1"
+                                            step="1"
+                                        {% endif %}
+
+                                        {% if not locked and
+                                              field in ['district_code',
+                                                        'district_name'] %}
+                                            required
+                                        {% endif %}
+                                    >
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="actions form-actions">
+
+                        <button type="submit"
+                                class="{{ 'patch' if mode == 'patch'
+                                           else '' }}">
+                            {{ operation }}
+                        </button>
+
+                        {% if editing %}
+
+                            <a class="btn secondary"
+                               href="{{ url_for('districts.list_districts') }}">
+                                Cancel
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+        <!-- ==================================================
+             GET: DISPLAY THE RETRIEVED DISTRICT RECORD
+             ================================================== -->
+
+        {% elif mode == 'view' and selected %}
+
+            <section class="card">
+
+                <h2>
+                    GET - District {{ selected.district_code }} -
+                    {{ selected.district_name }}
+                </h2>
+
+                <p class="description">
+                    District record retrieved using its unique
+                    identifier: {{ selected.district_code }}.
+                </p>
+
+                <div class="grid">
+
+                    {% for field, label in district_fields.items() %}
+
+                        {% set value = selected.get(field) %}
+
+                        <div>
+
+                            <label for="view_{{ field }}">
+                                {{ label }}
+                            </label>
+
+                            <input
+                                id="view_{{ field }}"
+                                value="{{ value
+                                          if value is not none and value != ''
+                                          else 'Not Available' }}"
+                                readonly
+                            >
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="actions form-actions">
+
+                    <a class="btn"
+                       href="{{ url_for(
+                           'districts.edit_district_form',
+                           district_code=selected.district_code
+                       ) }}"
+                       title="Full update of editable fields">
+                        PUT
+                    </a>
+
+                    <a class="btn patch"
+                       href="{{ url_for(
+                           'districts.patch_district_form',
+                           district_code=selected.district_code
+                       ) }}"
+                       title="Partial update of selected fields">
+                        PATCH
+                    </a>
+
+                    <a class="btn delete"
+                       href="{{ url_for(
+                           'districts.delete_district_form',
+                           district_code=selected.district_code
+                       ) }}"
+                       title="Delete district record">
+                        DELETE
+                    </a>
+
+                    <a class="btn secondary"
+                       href="{{ url_for('districts.list_districts') }}">
+                        Back to Districts
+                    </a>
+
+                </div>
+
+            </section>
+
+
+        <!-- ==================================================
+             DELETE: CONFIRM DISTRICT DELETION
+             ================================================== -->
+
+        {% elif mode == 'delete' and selected %}
+
+            <section class="card">
+
+                <h2>DELETE - Confirm District Deletion</h2>
+
+                <p>
+                    Are you sure you want to delete
+                    District {{ selected.district_code }} -
+                    {{ selected.district_name }}?
+                </p>
+
+                <p class="description">
+                    Remove the selected district using its unique
+                    identifier. Districts linked to existing
+                    crime records cannot be deleted.
+                </p>
+
+                <form method="POST"
+                      action="{{ url_for(
+                          'districts.confirm_district_delete',
+                          district_code=selected.district_code
+                      ) }}">
+
+                    <div class="actions">
+
+                        <button type="submit" class="delete">
+                            DELETE
+                        </button>
+
+                        <a class="btn secondary"
+                           href="{{ url_for('districts.list_districts') }}">
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- ==================================================
+             SEARCH AND DISPLAY EXISTING DISTRICT RECORDS
+             ================================================== -->
+
+        <section class="card">
+
+            <h2>
+                Existing Police Districts ({{ districts|length }})
+            </h2>
+
+            <!-- SEARCH: Retrieve records matching search criteria -->
+
+            <form class="district-search"
+                  method="GET"
+                  action="{{ url_for('districts.list_districts') }}">
+
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search district code, name, address, city or ZIP..."
+                    aria-label="Search police districts"
+                >
+
+                <button type="submit">
+                    Search
+                </button>
+
+                <a class="btn secondary"
+                   href="{{ url_for('districts.list_districts') }}">
+                    Clear
+                </a>
+
+            </form>
+
+            <!-- Display number of matching districts -->
+
+            {% if search %}
+
+                <p class="search-result">
+                    {{ districts|length }} district(s)
+                    found for "{{ search }}".
+                </p>
+
+            {% endif %}
+
+            {% set columns = [
+                'district_code',
+                'district_name',
+                'address',
+                'city',
+                'state',
+                'zip',
+                'phone'
+            ] %}
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            {% for field in columns %}
+
+                                <th>
+                                    {{ district_fields[field] }}
+                                </th>
+
+                            {% endfor %}
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for district in districts %}
+
+                            <tr class="{{ 'selected'
+                                          if selected and
+                                          selected.district_code ==
+                                          district.district_code
+                                          else '' }}">
+
+                                {% for field in columns %}
+
+                                    <td>
+
+                                        {% if field == 'district_name' %}
+
+                                            <a href="{{ url_for(
+                                                'districts.district_details',
+                                                district_code=district.district_code
+                                            ) }}">
+                                                {{ district[field] or '-' }}
+                                            </a>
+
+                                        {% else %}
+
+                                            {{ district[field] or '-' }}
+
+                                        {% endif %}
+
+                                    </td>
+
+                                {% endfor %}
+
+                                <td>
+
+                                    <div class="actions">
+
+                                        <!-- GET: Retrieve a specific record -->
+
+                                        <a class="btn secondary"
+                                           href="{{ url_for(
+                                               'districts.district_details',
+                                               district_code=district.district_code
+                                           ) }}"
+                                           title="Retrieve district by its unique identifier">
+                                            GET
+                                        </a>
+
+                                        <!-- PUT: Full update -->
+
+                                        <a class="btn"
+                                           href="{{ url_for(
+                                               'districts.edit_district_form',
+                                               district_code=district.district_code
+                                           ) }}"
+                                           title="Update all editable fields">
+                                            PUT
+                                        </a>
+
+                                        <!-- PATCH: Partial update -->
+
+                                        <a class="btn patch"
+                                           href="{{ url_for(
+                                               'districts.patch_district_form',
+                                               district_code=district.district_code
+                                           ) }}"
+                                           title="Update selected fields">
+                                            PATCH
+                                        </a>
+
+                                        <!-- DELETE: Remove a specific record -->
+
+                                        <a class="btn delete"
+                                           href="{{ url_for(
+                                               'districts.delete_district_form',
+                                               district_code=district.district_code
+                                           ) }}"
+                                           title="Delete district record">
+                                            DELETE
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% else %}
+
+                            <tr>
+
+                                <td colspan="8">
+
+                                    {% if search %}
+
+                                        No police districts match your search.
+
+                                    {% else %}
+
+                                        No police districts found.
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+        <footer>
+            Chicago Crime Analytics | Capstone Project 2026
+        </footer>
+
+    </main>
+
+</div>
+</body>
+</html>
